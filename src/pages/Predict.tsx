@@ -54,7 +54,7 @@ function Predict() {
 
   return (
     <div className="m-3">
-      <h2>Database Update</h2>
+      <h2>Predict</h2>
       <div>
         <label>Select the country: </label>
         <select

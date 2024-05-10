@@ -22,8 +22,8 @@ function Status() {
   return (
     <div>
       <h3>Status of uploaded data</h3>
-      <h4>Start Date: {startDate}</h4>
-      <h4>End Date: {endDate}</h4>
+      <h4>Earliest version: {startDate}</h4>
+      <h4>Latest version: {endDate}</h4>
       <h3>Countries:</h3>
       <table className="table">
         <thead>
