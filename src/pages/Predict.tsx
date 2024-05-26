@@ -3,16 +3,50 @@ import { useState, useEffect } from "react";
 
 function Predict() {
   const timespans = ["1", "2", "3", "4", "5", "6"];
+  const months = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+  ];
+  const years = [
+    "2017",
+    "2018",
+    "2019",
+    "2020",
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+  ];
   const violenceTypes: { [key: string]: string } = {
     1: "State-based",
     2: "Non-state",
     3: "One-sided",
+  };
+  const models: { [key: string]: string } = {
+    1: "arima",
+    2: "lstm",
   };
   const [countries, setCountries] = useState([]);
 
   const [country, setCountry] = useState("");
   const [timespan, setTimespan] = useState("1");
   const [violenceType, setViolenceType] = useState("1");
+  const [model, setModel] = useState("1");
+
+  const [startYear, setStartYear] = useState("1");
+  const [endYear, setEndYear] = useState("1");
+  const [startMonth, setStartMonth] = useState("1");
+  const [endMonth, setEndMonth] = useState("1");
 
   const [forecasts, setForecasts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,7 +63,7 @@ function Predict() {
       });
   }, []);
 
-  const url = `http://localhost:8080/forecaster/predict?country_id=${country}&violence_type=${violenceType}&timespan=${timespan}`;
+  const url = `http://localhost:8080/forecaster/predict?country_id=${country}&violence_type=${violenceType}&timespan=${timespan}&start_year=${startYear}&start_month=${startMonth}&last_year=${endYear}&last_month=${endMonth}&model=${models[model]}`;
 
   const handleOkClick = () => {
     // Выполните запрос к бекенду здесь
@@ -83,6 +117,82 @@ function Predict() {
           {Object.keys(violenceTypes).map((violenceTypeId) => (
             <option key={violenceTypeId} value={violenceTypeId}>
               {violenceTypes[violenceTypeId]}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label>Select the model: </label>
+        <select
+          className="form-select w-25"
+          aria-label="Default select example"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+        >
+          <option value=""></option>
+          {Object.keys(models).map((modelId) => (
+            <option key={modelId} value={modelId}>
+              {models[modelId]}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label>Select start year: </label>
+        <select
+          className="form-select w-25"
+          aria-label="Default select example"
+          value={startYear}
+          onChange={(e) => setStartYear(e.target.value)}
+        >
+          <option value=""></option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+        <label>Select start month: </label>
+        <select
+          className="form-select w-25"
+          aria-label="Default select example"
+          value={startMonth}
+          onChange={(e) => setStartMonth(e.target.value)}
+        >
+          <option value=""></option>
+          {months.map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label>Select end year: </label>
+        <select
+          className="form-select w-25"
+          aria-label="Default select example"
+          value={endYear}
+          onChange={(e) => setEndYear(e.target.value)}
+        >
+          <option value=""></option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+        <label>Select end month: </label>
+        <select
+          className="form-select w-25"
+          aria-label="Default select example"
+          value={endMonth}
+          onChange={(e) => setEndMonth(e.target.value)}
+        >
+          <option value=""></option>
+          {months.map((month) => (
+            <option key={month} value={month}>
+              {month}
             </option>
           ))}
         </select>
