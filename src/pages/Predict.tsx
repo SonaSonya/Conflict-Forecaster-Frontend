@@ -1,5 +1,6 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import Chart from "chart.js/auto";
 
 function Predict() {
   const timespans = ["1", "2", "3", "4", "5", "6"];
@@ -43,12 +44,14 @@ function Predict() {
   const [violenceType, setViolenceType] = useState("1");
   const [model, setModel] = useState("1");
 
-  const [startYear, setStartYear] = useState("1");
-  const [endYear, setEndYear] = useState("1");
+  const [startYear, setStartYear] = useState("2018");
+  const [endYear, setEndYear] = useState("2024");
   const [startMonth, setStartMonth] = useState("1");
   const [endMonth, setEndMonth] = useState("1");
 
   const [forecasts, setForecasts] = useState([]);
+  const [realData, setRealData] = useState([]);
+  const [predictedData, setPredictedData] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -62,6 +65,57 @@ function Predict() {
         console.error("Error: ", error);
       });
   }, []);
+
+  const chartRef = useRef(null);
+
+  const updateChart = () => {
+    // проверяем, существует ли уже график
+    if (chartRef.current && chartRef.current.chart) {
+      // удаляем существующий график
+      chartRef.current.chart.destroy();
+    }
+
+    if (chartRef.current) {
+      const chartInstance = new Chart(chartRef.current, {
+        type: "line",
+        data: {
+          labels: realData.map((_, index) => index + 1),
+          datasets: [
+            {
+              label: "Forecast",
+              data: predictedData,
+              borderColor: "rgba(255, 0, 0, 1)",
+              backgroundColor: "rgba(255, 0, 0, 0.2)",
+            },
+            {
+              label: "Real",
+              data: realData,
+              borderColor: "rgba(75, 192, 192, 1)",
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          title: {
+            display: true,
+            text: "Forecast",
+          },
+          legend: {
+            display: true,
+            position: "top",
+          },
+        },
+      });
+
+      // сохраняем ссылку на созданный график
+      chartRef.current.chart = chartInstance;
+    }
+  };
+
+  setTimeout(() => {
+    updateChart();
+  }, 100);
 
   const url = `http://localhost:8080/forecaster/predict?country_id=${country}&violence_type=${violenceType}&timespan=${timespan}&start_year=${startYear}&start_month=${startMonth}&last_year=${endYear}&last_month=${endMonth}&model=${models[model]}`;
 
@@ -78,7 +132,10 @@ function Predict() {
       .then((response) => response.json())
       .then((data) => {
         setForecasts(data.forecasts);
+        setRealData(data.actual);
+        setPredictedData(data.dataWithForecasts);
         setLoading(false); // Завершите загрузку
+        updateChart();
       })
       .catch((error) => {
         console.error("Ошибка запроса: ", error);
@@ -137,65 +194,73 @@ function Predict() {
           ))}
         </select>
       </div>
-      <div>
-        <label>Select start year: </label>
-        <select
-          className="form-select w-25"
-          aria-label="Default select example"
-          value={startYear}
-          onChange={(e) => setStartYear(e.target.value)}
-        >
-          <option value=""></option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <label>Select start month: </label>
-        <select
-          className="form-select w-25"
-          aria-label="Default select example"
-          value={startMonth}
-          onChange={(e) => setStartMonth(e.target.value)}
-        >
-          <option value=""></option>
-          {months.map((month) => (
-            <option key={month} value={month}>
-              {month}
-            </option>
-          ))}
-        </select>
+      <div className="d-flex">
+        <div className="me-2">
+          <label>Select start year: </label>
+          <select
+            className="form-select w-150"
+            aria-label="Default select example"
+            value={startYear}
+            onChange={(e) => setStartYear(e.target.value)}
+          >
+            <option value=""></option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Select start month: </label>
+          <select
+            className="form-select w-100"
+            aria-label="Default select example"
+            value={startMonth}
+            onChange={(e) => setStartMonth(e.target.value)}
+          >
+            <option value=""></option>
+            {months.map((month) => (
+              <option key={month} value={month}>
+                {month}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      <div>
-        <label>Select end year: </label>
-        <select
-          className="form-select w-25"
-          aria-label="Default select example"
-          value={endYear}
-          onChange={(e) => setEndYear(e.target.value)}
-        >
-          <option value=""></option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <label>Select end month: </label>
-        <select
-          className="form-select w-25"
-          aria-label="Default select example"
-          value={endMonth}
-          onChange={(e) => setEndMonth(e.target.value)}
-        >
-          <option value=""></option>
-          {months.map((month) => (
-            <option key={month} value={month}>
-              {month}
-            </option>
-          ))}
-        </select>
+      <div className="d-flex">
+        <div className="me-2">
+          <label>Select end year: </label>
+          <select
+            className="form-select w-150"
+            aria-label="Default select example"
+            value={endYear}
+            onChange={(e) => setEndYear(e.target.value)}
+          >
+            <option value=""></option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Select end month: </label>
+          <select
+            className="form-select w-100"
+            aria-label="Default select example"
+            value={endMonth}
+            onChange={(e) => setEndMonth(e.target.value)}
+          >
+            <option value=""></option>
+            {months.map((month) => (
+              <option key={month} value={month}>
+                {month}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       <div>
         <label>Select the month count for forecasting: </label>
@@ -236,6 +301,9 @@ function Predict() {
               ))}
             </tbody>
           </table>
+
+          <h3>Сhart:</h3>
+          <canvas ref={chartRef} width="800" height="400"></canvas>
         </div>
       )}
     </div>
